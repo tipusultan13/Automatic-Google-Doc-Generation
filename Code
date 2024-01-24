@@ -1,0 +1,42 @@
+function afterFormSubmit(e) {
+  console.log("Form submitted:", e);
+  const info = e.namedValues;
+  console.log("Info:", info);
+  createPDF(info);
+}
+
+function createPDF(info) {
+  const pdfFolder = DriveApp.getFolderById("1nZ4HpclMfbX_vEPPZk_S3HZ1ZQc4pP6V");
+  const tempFolder = DriveApp.getFolderById("1H2Ur-1F1rYFYb3e4nVyB0iBA5Mml7daT");
+  const templateDoc = DriveApp.getFileById("1BAedBJmaWf_Hm-gLsUWpOJf4oXh4u2Kax3ockWyVUjE");
+
+  console.log("Template document ID:", templateDoc.getId());
+
+  const newTempFile = templateDoc.makeCopy(tempFolder);
+  console.log("New temp file ID:", newTempFile.getId());
+
+  const openDoc = DocumentApp.openById(newTempFile.getId());
+  const body = openDoc.getBody();
+
+  // Ensure that the keys in info match the placeholders in your document
+  body.replaceText("{Name}", info['Name'][0]);
+  body.replaceText("{Surname}", info['Surname'][0]);
+  body.replaceText("{Gender}", info['Gender'][0]);
+  body.replaceText("{DateofBirth}", info['Date of Birth'][0]);
+  body.replaceText("{Nationality}", info['Nationality'][0]);
+  body.replaceText("{ID}", info['ID/PASSPORT'][0]);
+  body.replaceText("{University/College}", info['University-College'][0]);
+  body.replaceText("{Email}", info['Email'][0]);
+  body.replaceText("{Phone}", info['Phone'][0]);
+  body.replaceText("{CoordinatorEmail}", info['Coordinator Email'][0]);
+  body.replaceText("{Start}", info['Planned Placement Period (Start)'][0]);
+  body.replaceText("{End}", info['Planned Placement Period (End)'][0]);
+  body.replaceText("{Position}", info['Position Offered'][0]);
+  body.replaceText("{RoomType}", info['Room type'][0]);
+
+  openDoc.saveAndClose();
+
+  const blobPDF = newTempFile.getAs(MimeType.PDF);
+  const pdfFile = pdfFolder.createFile(blobPDF).setName(info['Name'][0]); // Use an appropriate key here
+  console.log("PDF created:", pdfFile.getUrl());
+}
